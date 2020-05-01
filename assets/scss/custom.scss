@@ -28,7 +28,8 @@ p.caption {
   margin-left: 12.5%;
 }
 .sidenote img,
-.marginnote img{
+.marginnote img,
+.marginnote figure{
   margin: 0;
 }
 .caption {
@@ -51,11 +52,11 @@ p.caption {
   .marginnote,
   .sidenote {
     display: block;
-    float: left;
+    float: none;
     left: 0;
     clear: both;
     width: 95%;
-    margin: 0 2.5%;
+    margin: 2.5% 2.5%;
     font-size: 1rem;
     line-height: 1.3;
     vertical-align: baseline;
