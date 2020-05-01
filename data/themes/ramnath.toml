@@ -1,0 +1,24 @@
+# Theme metadata
+name = "Ramnath"
+
+# Is theme light or dark?
+light = true
+
+primary = "#B362FF"
+
+# Menu
+menu_primary = "#FFFFFF"
+menu_text = "#34495E"
+menu_text_active = "#FF628C"
+menu_title = "#2B2B2B"
+
+# Home sections
+home_section_odd = "rgb(255, 255, 255)"
+home_section_even = "#F3F2FF"
+
+# Dark theme ----
+dark_home_section_even = "#525175"
+dark_home_section_odd = "#2D2B55"
+
+dark_background = "#2D2B55"
+dark_color_header = "#FAD000"
