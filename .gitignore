@@ -1,6 +1,7 @@
 # History files
 .Rhistory
 .Rapp.history
+.DS_Store
 
 # Session Data files
 .RData
@@ -37,3 +38,12 @@ vignettes/*.pdf
 
 # R Environment Variables
 .Renviron
+
+# Hugo built files
+*.zip
+/public/*
+/blogdown/*
+*_cache*
+
+# Content
+widgets-unused
