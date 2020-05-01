@@ -1,0 +1,69 @@
+// Override this file to add your own SCSS styling.
+.navbar {
+  height: 40px;
+}
+section#hero img{
+  width: 200px;
+}
+
+section#hero h1 {
+  font-family: Megrim;
+  color: #FAD000;
+  font-face: bold;
+}
+
+.widgetframe {
+  margin-bottom: 40px;
+}
+
+p.caption {
+  text-align: center;
+  font-family: 'Source Sans Pro';
+  font-size: 16px;
+  color: #333333;
+}
+
+.article-container {
+  padding-left: 0;
+  margin-left: 12.5%;
+}
+.sidenote img,
+.marginnote img{
+  margin: 0;
+}
+.caption {
+  text-align: center;
+}
+.sidenote,
+.marginnote {
+    float: right;
+    clear: right;
+    margin-right: -35%;
+    width: 30%;
+    margin-top: 0;
+    margin-bottom: 0;
+    font-size: 0.7rem;
+    line-height: 1.3;
+    vertical-align: baseline;
+    position: relative; 
+}
+@media only screen and (max-width: 1160px) {
+  .marginnote,
+  .sidenote {
+    display: block;
+    float: left;
+    left: 0;
+    clear: both;
+    width: 95%;
+    margin: 0 2.5%;
+    font-size: 1rem;
+    line-height: 1.3;
+    vertical-align: baseline;
+    position: relative;
+  }
+  .marginnote img{
+    max-width: 60%;
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
