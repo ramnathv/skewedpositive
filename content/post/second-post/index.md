@@ -22,3 +22,9 @@ projects: []
 This is my second post.
 
 More
+
+```python
+import pandas as pd
+data = pd.read_csv("data.csv")
+data.head()
+```
