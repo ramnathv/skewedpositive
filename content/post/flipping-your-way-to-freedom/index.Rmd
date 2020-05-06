@@ -18,12 +18,15 @@ projects: []
 ---
 
 In this post, we will solve a classic puzzle from the
-[Riddler](https://fivethirtyeight.com/features/can-you-flip-your-way-to-freedom/). We will use R to simulate the puzzle and build some intuition, and then use good old calculus to compute a closed form solution to the problem!
+[Riddler](https://fivethirtyeight.com/features/can-you-flip-your-way-to-freedom/).
+We will use R to simulate the puzzle and build some intuition, and then use good
+old calculus to compute a closed form solution to the problem!
 
 ## Problem statement
 
 <blockquote>
-From Bart Wright comes a rhetorical question from a famed soliloquy, “To flip, or not to flip?”:
+From Bart Wright comes a rhetorical question from a famed soliloquy, “To flip,
+or not to flip?”:
 
 You are locked in the dungeon of a faraway castle with three fellow prisoners
 (i.e., there are four prisoners in total), each in a separate cell with no means
@@ -89,7 +92,11 @@ simulate_policy <- function(theta = 0.5, nb_prisoners = 4){
 mean(replicate(1000, simulate_policy()))
 ```
 
-Now that we have a function to simulate the policy, we can use it to compute the outcome for a number of trials across different values of `theta` and `nb_prisoners`. The easiest way to do this is to create a grid of values using `expand.grid` and apply the function `simulate_policy` to compute the outcome of the trial.
+Now that we have a function to simulate the policy, we can use it to compute the
+outcome for a number of trials across different values of `theta` and
+`nb_prisoners`. The easiest way to do this is to create a grid of values using
+`expand.grid` and apply the function `simulate_policy` to compute the outcome of
+the trial.
 
 ```{r simulations, eval = FALSE}
 NB_TRIALS = 10^4
@@ -274,6 +281,17 @@ $$
 P(\theta_{opt}) = \Big[\exp\big(\frac{n\log(2)}{n - 1}\big) - 1\Big]^{-n}
 $$
 
+<span class='marginnote'>
+I must admit that by the time I came to this part of the derivation, I got lazy 
+and used [WolframAlpha](https://www.wolframalpha.com/input/?i=limit+%28exp%28n*log%282%29%2F%28n+-+1%29%29+-+1%29%5E%28-n%29+as+n-%3Einfinity) to compute the limits for me!
+</span>
+
+Computing the limit of this probability, as $n -> \infty$, we get:
+
+$$
+\lim_{n -> \infty}\Big[\exp\big(\frac{n\log(2)}{n - 1}\big) - 1\Big]^{-n} = \frac{1}{4}
+$$
+
 Let us now use this exact expression and plot the probabilities of freedom and 
 not deciding to toss the coin.
 
@@ -296,7 +314,7 @@ tibble(n = 2:20) %>%
   ) +
   ylim(0, 1) +
   labs(
-    title = "Probablity of freedom",
+    title = "Probability of freedom",
     subtitle = 'These values are calculated using the closed form expression derived.',
     x = 'Number of prisoners',
     y = '',

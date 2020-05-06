@@ -46,10 +46,26 @@ user_groups:
 - Visitors
 ---
 
-My name is Ramnath and I am the VP of Product Research at [DataCamp](https://www.datacamp.com), where I drive product innovation and data-driven product development. I am deeply addicted to data science, the statistical programming language R, interactive visualizations, and javascript.
+My name is Ramnath and I am the VP of Product Research at
+[DataCamp](https://www.datacamp.com), where I drive product innovation and
+data-driven product development. I am deeply addicted to data science, the
+statistical programming language R, interactive visualizations, and javascript.
 
-Prior to joining DataCamp, I worked as a data scientist at [Alteryx](https://www.alteryx.com). Before that, I was an Assistant Professor of Operations Management in the [Desautels Faculty of Management](https://www.mcgill.ca/desautels/) at [McGill University](https://www.mcgill.ca). My research primarily focused on the application of predictive analytics and optimization methodologies to improve operational decisions in retailing. I have a PhD in Operations Management from the [Wharton School](https://www.wharton.upenn.edu/), and worked at [McKinsey and Company](https://www.mckinsey.com) as a business analyst before that.
+Prior to joining [DataCamp](https://www.datacamp.com), I worked as a data
+scientist at [Alteryx](https://www.alteryx.com), and as an Assistant Professor
+of Operations Management in the [Desautels Faculty of
+Management](https://www.mcgill.ca/desautels/) at [McGill
+University](https://www.mcgill.ca). I have a PhD in Operations Management from
+the [Wharton School](https://www.wharton.upenn.edu/), and spent a couple of
+years at [McKinsey and Company](https://www.mckinsey.com) as a business analyst.
 
-I :heart: open-source and have developed several {{< icon name="r-project" pack="fab" >}} packages, including [rCharts](http://github.com/ramnathv/rCharts), [slidify](http://slidify.org), and [htmlwidgets](http://htmlwidgets.org). I am a frequent speaker at conferences and meetups.
+I :heart: open-source and have developed several {{\< icon name="r-project"
+pack="fab" \>}} packages, including
+[rCharts](http://github.com/ramnathv/rCharts), [slidify](http://slidify.org),
+and [htmlwidgets](http://htmlwidgets.org). I am a frequent speaker at
+conferences and meetups.
 
-I built this blog with [blogdown](https://bookdown.org/yihui/blogdown/), using a modified version of the amazing [academic](https://sourcethemes.com/academic/) theme. All posts are released under a Creative Commons Attribution-ShareAlike 4.0 International License.
+I built this blog with [blogdown](https://bookdown.org/yihui/blogdown/), using a
+modified version of the amazing [academic](https://sourcethemes.com/academic/)
+theme. All posts are released under a Creative Commons
+Attribution-ShareAlike 4.0 International License.
