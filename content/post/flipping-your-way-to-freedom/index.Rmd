@@ -1,0 +1,313 @@
+---
+title: Flipping your Way to Freedom
+author: ~
+date: '2020-05-05'
+slug: flipping-your-way-to-freedom
+categories: []
+tags: [riddler, puzzles]
+subtitle: 'Simulations, logic, and some calculus!'
+summary: ""
+authors: []
+lastmod: '2020-05-05T08:46:45-07:00'
+featured: no
+image:
+  caption: ''
+  focal_point: ''
+  preview_only: no
+projects: []
+---
+
+In this post, we will solve a classic puzzle from the
+[Riddler](https://fivethirtyeight.com/features/can-you-flip-your-way-to-freedom/). We will use R to simulate the puzzle and build some intuition, and then use good old calculus to compute a closed form solution to the problem!
+
+## Problem statement
+
+<blockquote>
+From Bart Wright comes a rhetorical question from a famed soliloquy, “To flip, or not to flip?”:
+
+You are locked in the dungeon of a faraway castle with three fellow prisoners
+(i.e., there are four prisoners in total), each in a separate cell with no means
+of communication. But it just so happens that all of you are logicians (of
+course).
+
+To entertain themselves, the guards have decided to give you all a single chance
+for immediate release. Each prisoner will be given a fair coin, which can either
+be fairly flipped one time or returned to the guards without being flipped. If
+all flipped coins come up heads, you will all be set free! But if any of the
+flipped coins comes up tails, or if no one chooses to flip a coin, you will all
+be doomed to spend the rest of your lives in the castle’s dungeon.
+
+The only tools you and your fellow prisoners have to aid you are random number
+generators, which will give each prisoner a random number, uniformly and
+independently chosen between zero and one.
+
+What are your chances of being released?
+
+**Extra credit:** Instead of four prisoners, suppose there are N prisoners. Now
+what are your chances of being released?
+
+</blockquote>
+
+
+## Simulate the problem
+
+<span class='marginnote'>
+This blog uses http://hypothes.is for enabling inline comments. You can
+highlight any line of text and click to annotate. You will need to sign up
+for an account with hypothes.is. You can also use this to take private notes!
+</span>
+Let us first try to understand the state of policies available to the prisoners.
+Since the only mechanism available is a random number generator, any policy
+would have to depend on the number generated. Moreover, the prisoner would need
+to decide whether or not to flip a coin based on this number.
+
+Without any loss of generality, we can assume that prisoner $i$ decides to flip
+a coin if the random number generated is less than $\theta_i$. Since the
+prisoners cannot communicate with each other, the only optimal policy that
+exists is $\theta_1 = \theta_2 = ... \theta$.
+
+
+```{r setup, include = FALSE, message = FALSE, warning = FALSE}
+library(tidyverse)
+source('~/Downloads/theme-rv.R')
+theme_set(theme_rv_light(base_family = 'Alegreya Sans'))
+rv_set_chunk_opts()
+```
+
+We can now simulate the impact of this policy on the probability of freedom as a
+function of the number of prisoners, and the threshold $\theta$.
+
+``` {r simulate-policy}
+simulate_policy <- function(theta = 0.5, nb_prisoners = 4){
+  # Generate random numbers for all prisoners
+   x <- runif(nb_prisoners)
+   # Toss if x > theta: N = No Toss, H = Head, T = Tail
+   tosses <- ifelse(x < theta, "N", sample(c("H", "T"), nb_prisoners, replace = TRUE))
+   # Freedom: #H > 0 and #T == 0 
+   sum(tosses == "H") > 0 && sum(tosses == "T") == 0
+}
+mean(replicate(1000, simulate_policy()))
+```
+
+Now that we have a function to simulate the policy, we can use it to compute the outcome for a number of trials across different values of `theta` and `nb_prisoners`. The easiest way to do this is to create a grid of values using `expand.grid` and apply the function `simulate_policy` to compute the outcome of the trial.
+
+```{r simulations, eval = FALSE}
+NB_TRIALS = 10^4
+simulations <- expand.grid(
+  id_trial = 1:NB_TRIALS,
+  theta = seq(0, 1, 0.01),
+  nb_prisoners = 4:10
+) %>%
+  mutate(is_free = map2_lgl(theta, nb_prisoners, simulate_policy))
+
+simulations
+```
+
+```{r simulations-head, echo = FALSE}
+simulations <- readr::read_rds('simulations.rds')
+head(simulations)
+```
+
+We can summarize the simulated outcomes across `theta` and `nb_prisoners` and 
+plot them.
+
+```{r outcomes-plot, warning = FALSE, message = FALSE, fig.show = 'hide'}
+outcomes <- simulations %>%
+  group_by(theta, nb_prisoners) %>%
+  summarize(prob_free = mean(is_free))
+
+outcomes %>%
+   mutate(nb_prisoners = factor(nb_prisoners)) %>%
+   ggplot(aes(x = theta, y = prob_free, color = nb_prisoners)) +
+   geom_smooth(se = FALSE, span = 0.2) +
+   geom_point(alpha = 0.5) +
+   geom_hline(yintercept = 0.25, linetype = 'dashed', color = 'gray20') +
+   guides(colour = guide_legend(nrow = 1)) +
+   labs(
+     title = "Probability of freedom",
+     subtitle = "",
+     x = "Probability of NOT flipping a coin",
+     y = "",
+     color = "Number of prisoners"
+   ) +
+   theme(plot.title.position = 'plot')
+```
+
+<span class='marginnote' style='margin-top:1em;'>
+Note that I use `geom_smooth` to plot the curve and overlay the points on top of
+it. This provides a better approximation of behavior since we are only
+simulating N = 10^4 trials.
+</span>
+
+<span class='marginnote' style='margin-top:1em;'>
+😀 You can click on any of the plots to view an enlarged version!
+</span>
+
+```{r outcomes-plot-print, ref.label = "outcomes-plot", echo = FALSE}
+
+```
+
+
+We can now recover the approximate probabilities of
+freedom and plot it as a function of the number of prisoners. Note how the
+probabilities seem to be really close to each other and around 25%.
+
+
+```{r probability-across-n}
+outcomes %>%
+  group_by(nb_prisoners) %>%
+  filter(prob_free == max(prob_free)) %>%
+  ungroup() %>%
+  ggplot(aes(x = nb_prisoners, y = prob_free)) +
+  geom_col(fill = 'purple', color = NA) +
+  geom_hline(yintercept = 0.25, linetype = 'dashed') +
+  labs(
+    title = "Probability of freedom",
+    subtitle = "",
+    x = 'Number of prisoners',
+    y = ''
+  ) +
+  theme(plot.title.position = 'plot')
+```
+## Exact solution
+
+Maybe, we can solve this problem exactly without simulations. Let **N** denote
+the event that a prisoner does not flip the coin, and $\theta$ be the
+probability of this event. The only scenario under which the prisoners end up
+being free is when __none__ of them toss a tail, and __all__ of them don't end 
+up NOT tossing. Hence, we can now compute the probability of freedom as:
+
+
+$$ 
+\begin{aligned}
+P(Freedom) &= P(T^cT^cT^c...T^c) - P(NNN...N) \\
+&= \Big(\frac{1+\theta}{2}\Big)^n - \theta^n 
+\end{aligned}
+$$
+
+Now that we have a closed form expression for the probability of freedom, we can
+turn this into an R function and use the `optimize()` function to compute the 
+optimal values.
+
+
+```{r optimize-probability}
+prob_freedom <- function(n = 4){
+  function(theta){
+   ((1 + theta)/2)^n - theta^n
+  }
+}
+optimize(prob_freedom(4), c(0, 1),  maximum = TRUE)
+```
+
+We can extend this approach to compute the optimal probability of freedom
+across a range of values for the number of prisoners.
+
+<span class='marginnote'>
+We use `unnest_longer` to unpack the list of values returned by `optimize()`.
+The `tidyr` package is full of such utility functions!
+</span>
+
+
+```{r optimal-values}
+optimal_values <- data.frame(nb_prisoners = 1:30) %>%
+  mutate(prob_free = map(nb_prisoners, ~ {
+    optimize(prob_freedom(.x), c(0, 1),  maximum = TRUE)
+  })) %>%
+  tidyr::unnest_longer(prob_free)
+head(optimal_values)
+```
+
+```{r optimized-plot, fig.show = 'hide'}
+optimal_values %>% 
+  ggplot(aes(x = nb_prisoners, y = prob_free, color = prob_free_id)) +
+  geom_line(size = 1.5) +
+  geom_hline(yintercept = c(0.25, 0.96), linetype = 'dashed', color = 'gray40') +
+  scale_color_discrete(
+    labels = c("Not Flipping Coin", "Freedom")
+  ) +
+  labs(
+    title = "Probability of freedom",
+    subtitle = "",
+    x = 'Number of prisoners',
+    y = 'Probability',
+    color = ""
+  ) +
+  theme(
+    plot.title.position = 'plot'
+  )
+```
+
+<span class='marginnote' style='margin-top:1rem;'>
+It seems like the probabilities of freedom, and NOT flipping the coin
+converge asymptotically to the values 0.25 and 0.96 respectively. It would
+be interesting if we can prove this result mathematically!
+</span>
+
+```{r echo = FALSE, ref.label = 'optimized-plot'}
+
+```
+
+Let us take the derivative of the probability function and see if we can derive
+a closed form expression for the optimal value of $\theta$, by setting the 
+derivative to zero. Let $P(\theta)$ represent the probability of freedom. Recall
+that we can express it as:
+
+$$
+P(\theta) = \Big(\frac{1 + \theta}{2}\Big)^{n} - \theta^n
+$$
+The first derivative can be written down as:
+
+$$
+P^{'}(\theta) = 2^{n} n(1 + \theta)^{n - 1} - n\theta^{n-1}
+$$
+
+Solving for $P^{'}(\theta) = 0$, we get
+
+$$
+\theta_{opt} = \Big[\exp\big(\frac{n\log(2)}{n - 1}\big) - 1\Big]^{-1}
+$$
+
+Voila! That is a really beautiful result!! Plugging the optimal value of
+$\theta$, we can write down the probability of freedom as:
+
+$$
+P(\theta_{opt}) = \Big[\exp\big(\frac{n\log(2)}{n - 1}\big) - 1\Big]^{-n}
+$$
+
+Let us now use this exact expression and plot the probabilities of freedom and 
+not deciding to toss the coin.
+
+
+```{r closed-form, echo = FALSE}
+f <- function(n){
+  theta = (exp(n*log(2) / (n - 1)) - 1)^-1
+  prob_free = prob_freedom(n)(theta)
+  list(maximum = theta, objective = prob_free)
+}
+
+tibble(n = 2:20) %>%
+  mutate(f = map(n, f)) %>%
+  unnest_longer(f) %>%
+  ggplot(aes(x = n, y = f, color = f_id)) +
+  geom_line(size = 1.5) +
+  geom_hline(yintercept = c(0.25, 0.96), linetype = 'dashed', color = 'gray40') +
+  scale_color_discrete(
+    labels = c("Not Flipping Coin", "Freedom")
+  ) +
+  ylim(0, 1) +
+  labs(
+    title = "Probablity of freedom",
+    subtitle = 'These values are calculated using the closed form expression derived.',
+    x = 'Number of prisoners',
+    y = '',
+    color = ""
+  )
+```
+
+
+<script type="application/json" class="js-hypothesis-config">
+{
+  "theme": "clean"
+}
+</script>
+<script async src="https://hypothes.is/embed.js"></script>
