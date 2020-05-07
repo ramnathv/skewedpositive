@@ -72,7 +72,7 @@ function of the number of prisoners, and the threshold <span class="math inline"
   sum(tosses == &quot;H&quot;) &gt; 0 &amp;&amp; sum(tosses == &quot;T&quot;) == 0
 }
 mean(replicate(1000, simulate_policy()))</code></pre>
-<pre class="knitr-output"><code>#&gt; [1] 0.244</code></pre>
+<pre class="knitr-output"><code>#&gt; [1] 0.246</code></pre>
 <p>Now that we have a function to simulate the policy, we can use it to compute the
 outcome for a number of trials across different values of <code>theta</code> and
 <code>nb_prisoners</code>. The easiest way to do this is to create a grid of values using
@@ -226,8 +226,8 @@ converge asymptotically to the values 0.25 and 0.96 respectively. It would
 be interesting if we can prove this result mathematically!
 </span></p>
 <figure>
-<a href="/post/flipping-your-way-to-freedom/index_files/figure-html/unnamed-chunk-1-1.png" data-fancybox="">
-<img src="/post/flipping-your-way-to-freedom/index_files/figure-html/unnamed-chunk-1-1.png"/>
+<a href="/post/flipping-your-way-to-freedom/index_files/figure-html/optimized-plot-show-1.png" data-fancybox="">
+<img src="/post/flipping-your-way-to-freedom/index_files/figure-html/optimized-plot-show-1.png"/>
 </a>
 <figcaption>
 </figcaption>

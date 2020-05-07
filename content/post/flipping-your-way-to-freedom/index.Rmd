@@ -111,7 +111,7 @@ simulations
 ```
 
 ```{r simulations-head, echo = FALSE}
-simulations <- readr::read_rds('simulations.rds')
+simulations <- readr::read_rds('~/Downloads/simulations.rds')
 head(simulations)
 ```
 
@@ -250,7 +250,7 @@ converge asymptotically to the values 0.25 and 0.96 respectively. It would
 be interesting if we can prove this result mathematically!
 </span>
 
-```{r echo = FALSE, ref.label = 'optimized-plot'}
+```{r optimized-plot-show, echo = FALSE, ref.label = 'optimized-plot'}
 
 ```
 
