@@ -59,8 +59,8 @@ University](https://www.mcgill.ca). I have a PhD in Operations Management from
 the [Wharton School](https://www.wharton.upenn.edu/), and spent a couple of
 years at [McKinsey and Company](https://www.mckinsey.com) as a business analyst.
 
-I :heart: open-source and have developed several {{\< icon name="r-project"
-pack="fab" \>}} packages, including
+I :heart: open-source and have developed several {{< icon name="r-project"
+pack="fab" >}} packages, including
 [rCharts](http://github.com/ramnathv/rCharts), [slidify](http://slidify.org),
 and [htmlwidgets](http://htmlwidgets.org). I am a frequent speaker at
 conferences and meetups.
