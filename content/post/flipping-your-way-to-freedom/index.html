@@ -1,0 +1,278 @@
+---
+title: Flipping your Way to Freedom
+author: ~
+date: '2020-05-05'
+slug: flipping-your-way-to-freedom
+categories: []
+tags: [riddler, puzzles]
+subtitle: 'Simulations, logic, and some calculus!'
+summary: ""
+authors: []
+lastmod: '2020-05-05T08:46:45-07:00'
+featured: no
+image:
+  caption: ''
+  focal_point: ''
+  preview_only: yes
+projects: []
+---
+
+
+
+<p>In this post, we will solve a classic puzzle from the
+<a href="https://fivethirtyeight.com/features/can-you-flip-your-way-to-freedom/">Riddler</a>.
+We will use R to simulate the puzzle and build some intuition, and then use good
+old calculus to compute a closed form solution to the problem!</p>
+<div id="problem-statement" class="section level2">
+<h2>Problem statement</h2>
+<blockquote>
+<p>From Bart Wright comes a rhetorical question from a famed soliloquy, “To flip,
+or not to flip?”:</p>
+<p>You are locked in the dungeon of a faraway castle with three fellow prisoners
+(i.e., there are four prisoners in total), each in a separate cell with no means
+of communication. But it just so happens that all of you are logicians (of
+course).</p>
+<p>To entertain themselves, the guards have decided to give you all a single chance
+for immediate release. Each prisoner will be given a fair coin, which can either
+be fairly flipped one time or returned to the guards without being flipped. If
+all flipped coins come up heads, you will all be set free! But if any of the
+flipped coins comes up tails, or if no one chooses to flip a coin, you will all
+be doomed to spend the rest of your lives in the castle’s dungeon.</p>
+<p>The only tools you and your fellow prisoners have to aid you are random number
+generators, which will give each prisoner a random number, uniformly and
+independently chosen between zero and one.</p>
+<p>What are your chances of being released?</p>
+<p><strong>Extra credit:</strong> Instead of four prisoners, suppose there are N prisoners. Now
+what are your chances of being released?</p>
+</blockquote>
+</div>
+<div id="simulate-the-problem" class="section level2">
+<h2>Simulate the problem</h2>
+<p><span class="marginnote">
+This blog uses <a href="http://hypothes.is" class="uri">http://hypothes.is</a> for enabling inline comments. You can
+highlight any line of text and click to annotate. You will need to sign up
+for an account with hypothes.is. You can also use this to take private notes!
+</span>
+Let us first try to understand the state of policies available to the prisoners.
+Since the only mechanism available is a random number generator, any policy
+would have to depend on the number generated. Moreover, the prisoner would need
+to decide whether or not to flip a coin based on this number.</p>
+<p>Without any loss of generality, we can assume that prisoner <span class="math inline">\(i\)</span> decides to flip
+a coin if the random number generated is less than <span class="math inline">\(\theta_i\)</span>. Since the
+prisoners cannot communicate with each other, the only optimal policy that
+exists is <span class="math inline">\(\theta_1 = \theta_2 = ... \theta\)</span>.</p>
+<p>We can now simulate the impact of this policy on the probability of freedom as a
+function of the number of prisoners, and the threshold <span class="math inline">\(\theta\)</span>.</p>
+<pre class="r"><code>simulate_policy &lt;- function(theta = 0.5, nb_prisoners = 4) {
+  # Generate random numbers for all prisoners
+  x &lt;- runif(nb_prisoners)
+  # Toss if x &gt; theta: N = No Toss, H = Head, T = Tail
+  tosses &lt;- ifelse(x &lt; theta, &quot;N&quot;, sample(c(&quot;H&quot;, &quot;T&quot;), nb_prisoners, replace = TRUE))
+  # Freedom: #H &gt; 0 and #T == 0
+  sum(tosses == &quot;H&quot;) &gt; 0 &amp;&amp; sum(tosses == &quot;T&quot;) == 0
+}
+mean(replicate(1000, simulate_policy()))</code></pre>
+<pre class="knitr-output"><code>#&gt; [1] 0.244</code></pre>
+<p>Now that we have a function to simulate the policy, we can use it to compute the
+outcome for a number of trials across different values of <code>theta</code> and
+<code>nb_prisoners</code>. The easiest way to do this is to create a grid of values using
+<code>expand.grid</code> and apply the function <code>simulate_policy</code> to compute the outcome of
+the trial.</p>
+<pre class="r"><code>NB_TRIALS &lt;- 10^4
+simulations &lt;- expand.grid(
+  id_trial = 1:NB_TRIALS,
+  theta = seq(0, 1, 0.01),
+  nb_prisoners = 4:10
+) %&gt;%
+  mutate(is_free = map2_lgl(theta, nb_prisoners, simulate_policy))
+
+simulations</code></pre>
+<pre class="knitr-output"><code>#&gt;   id_trial theta nb_prisoners is_free
+#&gt; 1        1     0            4       0
+#&gt; 2        2     0            4       0
+#&gt; 3        3     0            4       0
+#&gt; 4        4     0            4       0
+#&gt; 5        5     0            4       0
+#&gt; 6        6     0            4       0</code></pre>
+<p>We can summarize the simulated outcomes across <code>theta</code> and <code>nb_prisoners</code> and
+plot them.</p>
+<pre class="r"><code>outcomes &lt;- simulations %&gt;%
+  group_by(theta, nb_prisoners) %&gt;%
+  summarize(prob_free = mean(is_free))
+
+outcomes %&gt;%
+  mutate(nb_prisoners = factor(nb_prisoners)) %&gt;%
+  ggplot(aes(x = theta, y = prob_free, color = nb_prisoners)) +
+  geom_smooth(se = FALSE, span = 0.2) +
+  geom_point(alpha = 0.5) +
+  geom_hline(yintercept = 0.25, linetype = &quot;dashed&quot;, color = &quot;gray20&quot;) +
+  guides(colour = guide_legend(nrow = 1)) +
+  labs(
+    title = &quot;Probability of freedom&quot;,
+    subtitle = &quot;&quot;,
+    x = &quot;Probability of NOT flipping a coin&quot;,
+    y = &quot;&quot;,
+    color = &quot;Number of prisoners&quot;
+  ) +
+  theme(plot.title.position = &quot;plot&quot;)</code></pre>
+<p><span class="marginnote" style="margin-top:1em;">
+Note that I use <code>geom_smooth</code> to plot the curve and overlay the points on top of
+it. This provides a better approximation of behavior since we are only
+simulating N = 10^4 trials.
+</span></p>
+<p><span class="marginnote" style="margin-top:1em;">
+😀 You can click on any of the plots to view an enlarged version!
+</span></p>
+<figure>
+<a href="/post/flipping-your-way-to-freedom/index_files/figure-html/outcomes-plot-print-1.png" data-fancybox="">
+<img src="/post/flipping-your-way-to-freedom/index_files/figure-html/outcomes-plot-print-1.png"/>
+</a>
+<figcaption>
+</figcaption>
+</figure>
+<p>We can now recover the approximate probabilities of
+freedom and plot it as a function of the number of prisoners. Note how the
+probabilities seem to be really close to each other and around 25%.</p>
+<pre class="r"><code>outcomes %&gt;%
+  group_by(nb_prisoners) %&gt;%
+  filter(prob_free == max(prob_free)) %&gt;%
+  ungroup() %&gt;%
+  ggplot(aes(x = nb_prisoners, y = prob_free)) +
+  geom_col(fill = &quot;purple&quot;, color = NA) +
+  geom_hline(yintercept = 0.25, linetype = &quot;dashed&quot;) +
+  labs(
+    title = &quot;Probability of freedom&quot;,
+    subtitle = &quot;&quot;,
+    x = &quot;Number of prisoners&quot;,
+    y = &quot;&quot;
+  ) +
+  theme(plot.title.position = &quot;plot&quot;)</code></pre>
+<figure>
+<a href="/post/flipping-your-way-to-freedom/index_files/figure-html/probability-across-n-1.png" data-fancybox="">
+<img src="/post/flipping-your-way-to-freedom/index_files/figure-html/probability-across-n-1.png"/>
+</a>
+<figcaption>
+</figcaption>
+</figure>
+</div>
+<div id="exact-solution" class="section level2">
+<h2>Exact solution</h2>
+<p>Maybe, we can solve this problem exactly without simulations. Let <strong>N</strong> denote
+the event that a prisoner does not flip the coin, and <span class="math inline">\(\theta\)</span> be the
+probability of this event. The only scenario under which the prisoners end up
+being free is when <strong>none</strong> of them toss a tail, and <strong>all</strong> of them don’t end
+up NOT tossing. Hence, we can now compute the probability of freedom as:</p>
+<p><span class="math display">\[ 
+\begin{aligned}
+P(Freedom) &amp;= P(T^cT^cT^c...T^c) - P(NNN...N) \\
+&amp;= \Big(\frac{1+\theta}{2}\Big)^n - \theta^n 
+\end{aligned}
+\]</span></p>
+<p>Now that we have a closed form expression for the probability of freedom, we can
+turn this into an R function and use the <code>optimize()</code> function to compute the
+optimal values.</p>
+<pre class="r"><code>prob_freedom &lt;- function(n = 4) {
+  function(theta) {
+    ((1 + theta) / 2)^n - theta^n
+  }
+}
+optimize(prob_freedom(4), c(0, 1), maximum = TRUE)</code></pre>
+<pre class="knitr-output"><code>#&gt; $maximum
+#&gt; [1] 0.6579609
+#&gt; 
+#&gt; $objective
+#&gt; [1] 0.2848424</code></pre>
+<p>We can extend this approach to compute the optimal probability of freedom
+across a range of values for the number of prisoners.</p>
+<p><span class="marginnote">
+We use <code>unnest_longer</code> to unpack the list of values returned by <code>optimize()</code>.
+The <code>tidyr</code> package is full of such utility functions!
+</span></p>
+<pre class="r"><code>optimal_values &lt;- data.frame(nb_prisoners = 1:30) %&gt;%
+  mutate(prob_free = map(nb_prisoners, ~ {
+    optimize(prob_freedom(.x), c(0, 1), maximum = TRUE)
+  })) %&gt;%
+  tidyr::unnest_longer(prob_free)
+head(optimal_values)</code></pre>
+<pre class="knitr-output"><code>#&gt; # A tibble: 6 x 3
+#&gt;   nb_prisoners prob_free prob_free_id
+#&gt;          &lt;int&gt;     &lt;dbl&gt; &lt;chr&gt;       
+#&gt; 1            1 0.0000661 maximum     
+#&gt; 2            1 0.500     objective   
+#&gt; 3            2 0.333     maximum     
+#&gt; 4            2 0.333     objective   
+#&gt; 5            3 0.547     maximum     
+#&gt; 6            3 0.299     objective</code></pre>
+<pre class="r"><code>optimal_values %&gt;%
+  ggplot(aes(x = nb_prisoners, y = prob_free, color = prob_free_id)) +
+  geom_line(size = 1.5) +
+  geom_hline(yintercept = c(0.25, 0.96), linetype = &quot;dashed&quot;, color = &quot;gray40&quot;) +
+  scale_color_discrete(
+    labels = c(&quot;Not Flipping Coin&quot;, &quot;Freedom&quot;)
+  ) +
+  labs(
+    title = &quot;Probability of freedom&quot;,
+    subtitle = &quot;&quot;,
+    x = &quot;Number of prisoners&quot;,
+    y = &quot;Probability&quot;,
+    color = &quot;&quot;
+  ) +
+  theme(
+    plot.title.position = &quot;plot&quot;
+  )</code></pre>
+<p><span class="marginnote" style="margin-top:1rem;">
+It seems like the probabilities of freedom, and NOT flipping the coin
+converge asymptotically to the values 0.25 and 0.96 respectively. It would
+be interesting if we can prove this result mathematically!
+</span></p>
+<figure>
+<a href="/post/flipping-your-way-to-freedom/index_files/figure-html/unnamed-chunk-1-1.png" data-fancybox="">
+<img src="/post/flipping-your-way-to-freedom/index_files/figure-html/unnamed-chunk-1-1.png"/>
+</a>
+<figcaption>
+</figcaption>
+</figure>
+<p>Let us take the derivative of the probability function and see if we can derive
+a closed form expression for the optimal value of <span class="math inline">\(\theta\)</span>, by setting the
+derivative to zero. Let <span class="math inline">\(P(\theta)\)</span> represent the probability of freedom. Recall
+that we can express it as:</p>
+<p><span class="math display">\[
+P(\theta) = \Big(\frac{1 + \theta}{2}\Big)^{n} - \theta^n
+\]</span>
+The first derivative can be written down as:</p>
+<p><span class="math display">\[
+P^{&#39;}(\theta) = 2^{n} n(1 + \theta)^{n - 1} - n\theta^{n-1}
+\]</span></p>
+<p>Solving for <span class="math inline">\(P^{&#39;}(\theta) = 0\)</span>, we get</p>
+<p><span class="math display">\[
+\theta_{opt} = \Big[\exp\big(\frac{n\log(2)}{n - 1}\big) - 1\Big]^{-1}
+\]</span></p>
+<p>Voila! That is a really beautiful result!! Plugging the optimal value of
+<span class="math inline">\(\theta\)</span>, we can write down the probability of freedom as:</p>
+<p><span class="math display">\[
+P(\theta_{opt}) = \Big[\exp\big(\frac{n\log(2)}{n - 1}\big) - 1\Big]^{-n}
+\]</span></p>
+<p><span class="marginnote">
+I must admit that by the time I came to this part of the derivation, I got lazy
+and used <a href="https://www.wolframalpha.com/input/?i=limit+%28exp%28n*log%282%29%2F%28n+-+1%29%29+-+1%29%5E%28-n%29+as+n-%3Einfinity">WolframAlpha</a> to compute the limits for me!
+</span></p>
+<p>Computing the limit of this probability, as <span class="math inline">\(n -&gt; \infty\)</span>, we get:</p>
+<p><span class="math display">\[
+\lim_{n -&gt; \infty}\Big[\exp\big(\frac{n\log(2)}{n - 1}\big) - 1\Big]^{-n} = \frac{1}{4}
+\]</span></p>
+<p>Let us now use this exact expression and plot the probabilities of freedom and
+not deciding to toss the coin.</p>
+<figure>
+<a href="/post/flipping-your-way-to-freedom/index_files/figure-html/closed-form-1.png" data-fancybox="">
+<img src="/post/flipping-your-way-to-freedom/index_files/figure-html/closed-form-1.png"/>
+</a>
+<figcaption>
+</figcaption>
+</figure>
+<script type="application/json" class="js-hypothesis-config">
+{
+  "theme": "clean"
+}
+</script>
+<script async src="https://hypothes.is/embed.js"></script>
+</div>
